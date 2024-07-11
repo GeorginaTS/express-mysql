@@ -23,6 +23,6 @@ module.exports = class Todos {
     }
 
     update(id) {
-        return db.execute(`UPDATE users SET name="${this.name}",lastname="${this.lastname}",email="${this.email}", password= "${this.password}", profile= "${this.profile}"`)
+        return db.execute(`UPDATE users SET name="${this.name}",lastname="${this.lastname}",email="${this.email}", password= "${this.password}", profile= "${this.profile}" WHERE id=${id}`)
     }
 }

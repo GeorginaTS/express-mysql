@@ -22,7 +22,6 @@ module.exports = class Todo {
         return db.execute(`DELETE FROM todos WHERE id=${id}`)
     }
     update(id) {
-        return db.execute(`UPDATE todos SET title = "${this.title}", content = "${this.content}", status = ${this.status}, iduser = ${this.iduser}, idcategory = ${this.idcategory}
-WHERE id=${id}`)
+        return db.execute(`UPDATE todos SET title = "${this.title}", content = "${this.content}", status = ${this.status}, iduser = ${this.iduser}, idcategory = ${this.idcategory} WHERE id=${id}`)
     }
 }
