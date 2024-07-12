@@ -24,21 +24,31 @@ const getByIdUser = (request, response) => {
     usersModel
       .getById(id)
       .then((data) => {
-        response.send(data[0]);
+        if(data[0].length>0) {
+          response.status(200).send(data[0]);
+        } else {
+          response.status(404).send({msg: "Error user not found", id});
+        }
       })
       .catch((error) => {
-        response.send("error");
+        response.status(400).send({msg:"Error getById", id});
       });
   } catch (error) {
-    response.send({ msg: "Error getByIdUser", error });
+    response.status(500).send({ msg: "Error getByIdUser", error,message });
   }
 };
-const createUser = (request, response) => {
+const createUser = async (request, response) => {
   try {
     const { body } = request;
     const saltRounds = 10;
-    bcrypt.genSalt(saltRounds, function (err, salt) {
-      bcrypt.hash(body.password, salt, function (err, hash) {
+    const salt = await new Promise((resolve, reject) => 
+      bcrypt.genSalt(saltRounds, (err, salt) => err ? reject(err) : resolve(salt))
+    );
+
+    const hash = await new Promise((resolve, reject) =>
+      bcrypt.hash(body.password, salt, (err, hash) => err ? reject(err) : resolve(hash))
+    );
+
         const user = new usersModel(
           body.name,
           body.lastname,
@@ -49,15 +59,13 @@ const createUser = (request, response) => {
         user
           .create()
           .then((data) => {
-            response.send(data);
+            response.status(201).send({msg:"User Created", data:user});
           })
           .catch((error) => {
-            response.send({ msg: "error", error });
+            response.send({ msg: "Error create", error: error.message });
           });
-      });
-    });
   } catch (error) {
-    response.status(500).send({ msg: "Error createUser", error });
+    response.status(500).send({ msg: "Error createUser", error: error.message });
   }
 };
 
@@ -67,13 +75,17 @@ const deleteUser = (request, response) => {
     usersModel
       .delete(id)
       .then((data) => {
-        response.send(data);
+        if(data[0].affectedRows > 0) {
+          response.send({msg:"deleted", data, id});
+        } else {
+          response.send({msg:"User not found", id})
+        }
       })
       .catch((error) => {
-        response.send("error");
+        response.send({msg:"error delete", id});
       });
   } catch (error) {
-    response.send({ msg: "Error deleteUser", error });
+    response.status(500).send({ msg: "Error deleteUser", error: error.message });
   }
 };
 
@@ -83,7 +95,7 @@ const updateUser = (request, response) => {
     const { body } = request;
     const saltRounds = 10;
     bcrypt.genSalt(saltRounds, function (err, salt) {
-      bcrypt.hash(body.password, salt, function (err, hash) {
+      bcrypt.hash(body.password, salt,  function (err, hash) {
         const user = new usersModel(
           body.name,
           body.lastname,
@@ -94,10 +106,14 @@ const updateUser = (request, response) => {
         user
           .update(id)
           .then((data) => {
-            response.send(data);
+            if(data[0].affectedRows > 0) {
+              response.send({msg:"updated", data, user, id});
+            } else {
+              response.send({msg:"User not found", id})
+            }
           })
           .catch((error) => {
-            response.send({ msg: "error", error });
+            response.send({ msg: "Error updating user", error });
           });
       });
     });
@@ -106,41 +122,54 @@ const updateUser = (request, response) => {
   }
 };
 
-const loginUser = async (request, response) => {
+const loginUser = (request, response) => {
   try {
     const { body } = request;
     const inputPassword = body.password;
 
-    usersModel.getById(id).then((data) => {
-      const user = data[0];
+    usersModel.getByEmail(body.email)
+    .then((data) => {
+      const user = data[0][0];
       console.log(user);
-      if (user.length > 0) {
-        const hashPassword = user.password;
-        bcrypt.compare(inputPassword, hashPassword, (err, result) => {
+      console.log("inputpassword:", inputPassword)
+       if (user.password) {
+        // const hashPassword = /^\$2b\$/.test(user.password) ? '$2a$' + user.password.slice(4) : user.password;
+        // hashPassword = user.password;
+        console.log("user.password", user.password)
+
+        bcrypt.compare(user.password, inputPassword, (err, result) => {
+            
           if (err) {
-            response.status(404).json({
+            response.send({
               msg: "Error bcrypt.compare",
+              err,
               hashPassword,
-              inputPassword,
+              inputPassword
             });
           }
+          console.log("result", result)
           if (result) {
             const token = jwt.sign({ user }, SecretToken, {
               expiresIn: "3600s",
             });
-            response.status(200).json({
+            response.send({
               msg: `Login OK . Token created ${user.name}`,
               token,
               user,
             });
           } else {
-            response
-              .status(404)
-              .json({ msg: "Password not correct", user, inputPassword });
+            response.status(400)
+              .send({ msg: "Password not correct"});
           }
-        });
+          });
       } else {
+        response
+        .status(404)
+        .json({ msg: "User not found", user });
       }
+    })
+    .catch((error) => {
+      response.send({ msg: "error Email", error });
     });
   } catch (error) {
     response.status(500).send("Error loginUser user", request.body);

@@ -14,9 +14,11 @@ module.exports = class Todos {
     create() {
         return db.execute(`INSERT INTO users (name, lastname, email, password, profile) VALUES ("${this.name}","${this.lastname}","${this.email}", "${this.password}","${this.profile}" )`)
     }
-
     static getById(id){
         return db.execute(`SELECT * FROM users WHERE id=${id}`)
+    }
+    static getByEmail(email){
+        return db.execute(`SELECT * FROM users WHERE email="${email}"`)
     }
     static delete(id) {
         return db.execute(`DELETE FROM users WHERE id=${id}`)
