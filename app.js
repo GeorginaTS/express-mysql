@@ -15,6 +15,8 @@ app.get("/", (request, response) => {
 
 app.use("/api/todos", require("./routes/todos"))
 app.use("/api/users", require("./routes/users"))
+app.use("/api/categories", require("./routes/categories"))
+app.use("/api/status", require("./routes/status"))
 
 app.listen(PORT, () => {
   console.log(`😊 Listening localhost port : ${PORT}`);

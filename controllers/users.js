@@ -122,6 +122,7 @@ const loginUser = (request, response) => {
     usersModel
       .getByEmail(body.email)
       .then((data) => {
+        console.log(data)
         const user = data[0][0];
         console.log(user);
         console.log("inputpassword:", inputPassword);
