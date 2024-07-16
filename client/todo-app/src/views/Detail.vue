@@ -12,9 +12,9 @@
         
         <p class="text-xs text-stone-600 flex justify-end p-1">{{todo.created}}</p>    
     </div>
-    <div>
-        <button @click="deleteItem" class="bg-red-600 p-2 rounded m-2">Delete</button>
-    </div>
+    <!-- <div>
+        <button @click="deleteTodo" class="bg-red-600 p-2 rounded m-2">Delete</button>
+    </div> -->
     {{ todo }}
     </div>
 </template>
@@ -50,7 +50,7 @@ export default {
         }
     }, 
     methods: {
-        async deleteItem() {
+        async deleteTodo() {
             try {
                 const response = await fetch(`http://localhost:3001/api/todos/${this.$route.params.id}`,{
                     method: "DELETE"
