@@ -10,7 +10,7 @@ app.use(express.static("client"));
 const PORT = process.env.PORT || 3002;
 
 app.get("/", (request, response) => {
-    response.send("<h1>Hola mundo</h1>") 
+    response.send("<h1>Hola mundo 😊</h1>") 
 });
 
 app.use("/api/todos", require("./routes/todos"))
